@@ -1,68 +1,90 @@
-[![Build Status](https://travis-ci.org/EOSIO/eosjs-api.svg?branch=master)](https://travis-ci.org/EOSIO/eosjs-api)
 [![NPM](https://img.shields.io/npm/v/eosjs-api.svg)](https://www.npmjs.org/package/eosjs-api)
 
 # Eos API
 
-Application programming interface to EOS blockchain nodes.  This is mostly for read-only API calls.  If you decide you need to sign transactions, your better off using this API in the [eosjs](https://github.com/eosio/eosjs) package.
+Application programming interface to EOS blockchain nodes.  This is for
+read-only API calls.  If you need to sign transactions use
+[eosjs](https://github.com/eosio/eosjs) instead.
 
-# Requirements
+# Include
 
-## api.Testnet()
+* Install with: `npm install eosjs-api`
+* Html script tag, see [releases](https://github.com/EOSIO/eosjs-api/releases) for the correct **version** and its matching script **integrity** hash.
 
-Internet access
+```html
+<html>
+<head>
+  <meta charset="utf-8">
+  <!--
+  sha512-n3CgU6w9TJVf/pVIMHYhk3Gxv8lEQYjVrSSTLXvEBENLF+CQd1Kp0jxXj09yGUOkWerdv2mJlh1Mnz3aRfYqWw== lib/eos-api.js
+  sha512-Cj2FQb94MMtDPgHb1R1577pEMjYhc+P5pNgv1/QwoJD9ntuR9rnWlqJACS/xNniNK5cFS6Y6CpQlHWpzWUeEbw== lib/eos-api.min.js
+  sha512-4C6oDKarS8DaXO99o342USbeQwqW98qik+QSzVGfof939gUpIyRDCnbGIGQAIkLNpYZIV4XanmRy3wcis6UW8w== lib/eos-api.min.js.map
+  -->
+  <script src="https://cdn.jsdelivr.net/npm/eosjs-api@7.0.4/lib/eos-api.min.js"
+    integrity="sha512-LLDsX/GdVZYA82k9TVz3zUxSjvaX8s5b1FJm64W51JGxLFKI2z+ljqYQtsUZIOxh9pSUqvLA5HCoxXqdRxusKw=="
+    crossorigin="anonymous"></script>
 
-## api.Localnet()
+</head>
+<body>
+  See console object: EosApi
+</body>
+</html>
+```
 
-Build and run [nodeos](https://github.com/eosio/eos) or direct requests to a public testnet or production node.
+## EosApi
+
+Run [nodeos](https://github.com/eosio/eos)
+
+* [API](./docs/api.md)
+* [Helper Functions](./docs/index.md)
 
 ## Usage
 
 ```javascript
-api = require('eosjs-api') // Or api = require('./src')
+EosApi = require('eosjs-api') // Or EosApi = require('./src')
 
-testnet = api.Testnet() // See ./src/testnet.js for configuration
+eos = EosApi() // // 127.0.0.1:8888
 
 // Any API call without a callback parameter will print documentation: description,
 // parameters, return value, and possible errors.  All methods and documentation
 // are created from JSON files in eosjs/json/api/v1..
-testnet.getInfo()
+eos.getInfo()
 
 // A Promise is returned if a callback is not provided.
-testnet.getInfo({}).then(result => console.log(result))
-testnet.getBlock(1).then(result => console.log(result))
+eos.getInfo({}).then(result => console.log(result))
+eos.getBlock(1).then(result => console.log(result))
 
 // For callbacks instead of Promises provide a callback
 callback = (err, res) => {err ? console.error(err) : console.log(res)}
 
 // The server does not expect any parameters only the callback is needed
-testnet.getInfo(callback)
+eos.getInfo(callback)
 
 // Parameters are added before the callback
-testnet.getBlock(1, callback)
+eos.getBlock(1, callback)
 
 // Parameters can be an object
-testnet.getBlock({block_num_or_id: 1}, callback)
-testnet.getBlock({block_num_or_id: 1}).then(result => console.log(result))
+eos.getBlock({block_num_or_id: 1}, callback)
+eos.getBlock({block_num_or_id: 1}).then(result => console.log(result))
 ```
 
 ## Configuration
 
 ```js
-api = require('eosjs-api') // Or api = require('./src')
+EosApi = require('eosjs-api') // Or EosApi = require('./src')
 
 // everything is optional
 options = {
-  httpEndpoint: 'http://127.0.0.1:8888', // default
-  debug: false, // API logging
+  httpEndpoint: 'http://127.0.0.1:8888', // default, null for cold-storage
+  verbose: false, // API logging
   logger: { // Default logging functions
-    log: console.log,
-    error: console.error,
-    debug: console.debug
+    log: config.verbose ? console.log : null,
+    error: config.verbose ? console.error : null
   },
   fetchConfiguration: {}
 }
 
-testnet = api.Localnet(options)
+eos = EosApi(options)
 ```
 ### options.logger example
 
@@ -72,6 +94,7 @@ During testing, an error may be expected and checked as follows:
 options.logger = {
   error: err => {
     assert.equal(err, 'expected error')
+    done()
   }
 }
 ```
@@ -89,15 +112,6 @@ fetch('https://example.com', {
   credentials: 'same-origin'
 })
 ```
-
-## API Documentation
-
-API methods and documentation are generated from:
-* [chain.json](https://github.com/EOSIO/eosjs-api/blob/master/src/api/v1/chain.json)
-* [account_history.json](https://github.com/EOSIO/eosjs-api/blob/master/src/api/v1/account_history.json)
-
-Helper functions:
-* [./docs/index.md](./docs/index.md)
 
 ## Environment
 
